@@ -45,4 +45,14 @@ class Data {
     return _data;
   }
 
+  List<int> getParams () {
+    double alpha, betha, ghama, theta, medX, medY;
+    double sumX = 0.0, sumY = 0.0;
+    for ( int i = 0; i < _data.length; i++ ) {
+      sumX += _data[i]['index'];
+      
+    }
+
+  }
+
 }
