@@ -38,20 +38,39 @@ class Data {
     { 'index' : 35,	'date' : '23/06/2020', 'peso' :	103.600, 'tag' :	'BD' },
     { 'index' : 36,	'date' : '24/06/2020', 'peso' :	103.500, 'tag' :	'BD' },
     { 'index' : 37,	'date' : '25/06/2020', 'peso' :	102.700, 'tag' :	'BD' },
-    { 'index' : 38,	'date' : '26/06/2020', 'peso' :	103.400, 'tag' :	'BD' }
+    { 'index' : 38,	'date' : '26/06/2020', 'peso' :	103.400, 'tag' :	'BD' },
+    { 'index' : 39,	'date' : '27/06/2020', 'peso' :	103.300, 'tag' :	'BD' },
   ];
 
   List<Map<String,dynamic>> getData () {
     return _data;
   }
 
-  List<int> getParams () {
-    double alpha, betha, ghama, theta, medX, medY;
+  Map<String, double> getParams () {
+    double alpha = 0.0, betha = 0.0, ghama = 0.0, theta = 0.0, medX = 0.0, medY = 0.0;
     double sumX = 0.0, sumY = 0.0;
     for ( int i = 0; i < _data.length; i++ ) {
       sumX += _data[i]['index'];
-      
+      sumY += _data[i]['peso'];
+      alpha += ( _data[i]['index'] * _data[i]['peso'] );
+      ghama += ( _data[i]['index'] * _data[i]['index'] );
     }
+
+    alpha *=  _data.length;
+    betha =   sumX * sumY;
+    ghama *=  _data.length;
+    theta =   sumX * sumX;
+
+    medX = sumX / _data.length;
+    medY = sumY / _data.length;
+
+    double a = ( alpha - betha ) / ( ghama - theta );
+    double b = medY - a * medX;
+
+    return {
+      'a' : a,
+      'b' : b
+    };
 
   }
 

@@ -12,12 +12,8 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Wgtmon"),
-        elevation: 0,
-        backgroundColor: Color(0xFF9e77e0),
-      ),
-      drawerScrimColor: Color(0xFF9e77e0),
+      backgroundColor: Color(0xff2c274c),
+      drawerScrimColor: Color(0xff2c274c),
       body: SafeArea(
         child: SingleChildScrollView(
           child: WeightChart(),
@@ -41,19 +37,30 @@ class _WeightChartState extends State<WeightChart> {
 
   List<Map<String, dynamic>> _data;
 
-  final limite = 50;
+  bool _barAreaReal = false;
+  bool _barAreaPred = false;
+
+  int _counter = 0;
+
+  Data dtObj;
+
+  final int limite = 50;
+  final int offset = 10;
 
   @override
   void initState() {
-    _data = Data().getData();
+    dtObj = Data();
+    _data = dtObj.getData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.23,
+      aspectRatio: 0.65,
       child: Container(
+        padding: EdgeInsets.only(bottom: 15, top: 15),
+        height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           // borderRadius: const BorderRadius.all(Radius.circular(18)),
           gradient: LinearGradient(
@@ -68,6 +75,7 @@ class _WeightChartState extends State<WeightChart> {
         child: Stack(
           children: <Widget>[
             Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 const SizedBox(
@@ -100,6 +108,36 @@ class _WeightChartState extends State<WeightChart> {
                 const SizedBox(
                   height: 10,
                 ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Tooltip(
+                    message: 'Mostrar/Esconder área do gráfico',
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.refresh,
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          if (_counter == 0) {
+                            _barAreaReal = false;
+                            _barAreaPred = false;
+                          } else if ( _counter == 1 ) {
+                            _barAreaReal = true;
+                            _barAreaPred = false;
+                          } else if ( _counter == 2 ) {
+                            _barAreaReal = false;
+                            _barAreaPred = true;
+                          } else {
+                            _barAreaReal = true;
+                            _barAreaPred = true;
+                          }
+                          _counter = ( _counter + 1 ) % 4;
+                        });
+                      },
+                    ),
+                  ),
+                )
               ],
             ),
           ],
@@ -135,6 +173,7 @@ class _WeightChartState extends State<WeightChart> {
               List<Map<String, dynamic>> item = _data.where((element) => element['index'] == value.toInt()).toList();
               if ( item.length > 0 ) {
                 int month = int.parse(item[0]['date'].substring(3, 5));
+
                 switch ( month ) {
                   case 1:
                     return 'JAN';
@@ -212,7 +251,7 @@ class _WeightChartState extends State<WeightChart> {
               else 
                 return b;
             })['index'] + 0.0,
-      maxX: (_data.length <= limite) ? _data.reduce((a, b) {
+      maxX: ((_data.length <= limite) ? _data.reduce((a, b) {
               if ( a['index'] > b['index'] )
                 return a;
               else 
@@ -223,7 +262,7 @@ class _WeightChartState extends State<WeightChart> {
                 return a;
               else 
                 return b;
-            })['index'] + 0.0,
+            })['index'] + 0.0 ) + offset,
       maxY: (_data.length <= limite) ? _data.reduce((a, b) {
               if ( a['peso'] > b['peso'] )
                 return a;
@@ -252,21 +291,17 @@ class _WeightChartState extends State<WeightChart> {
     );
   }
 
-  
-
   List<LineChartBarData> linesBarData1() {
 
-    var alpha = _data.length * _data.reduce((a, b) => { 'r' : a['index'] * a['peso'] + b['index'] * b['peso'] })['r'];
-    var betha = _data.reduce((a, b) => { 'r' : a['index'] + b['index'] })['r'] * _data.reduce((a, b) => { 'r' : a['peso'] + b['peso'] })['r']; 
-    var ghama = _data.length * _data.reduce((a, b) => { 'r' : a['index'] * a['index'] + b['index'] * b['index'] })['r'];
-    var theta = _data.reduce((a, b) => { 'r' : a['index'] + b['index']})['r'] * _data.reduce((a, b) => { 'r' : a['index'] + b['index']})['r'];
-
-    var medX  = _data.reduce((a, b) => { 'r' : a['index'] + b['index']})['r'] / _data.length;
-    var medY  = _data.reduce((a, b) => { 'r' : a['peso'] + b['peso']})['r'] / _data.length;
-
-    var a = ( alpha - betha ) / ( ghama - theta );
-    var b = medY - a * medX;
-
+    Map<String, double> params = dtObj.getParams();
+    List<FlSpot> dataList = [];
+    
+    for ( int i = 1; i <= ( _data.length + offset ); i++ )  {
+      dataList.add(FlSpot(
+        i.toDouble(),
+        params['a'] * i + params['b']
+      ));
+    }
 
     final LineChartBarData lineChartBarData1 = LineChartBarData(
       spots: (_data.length <= limite) ? _data.map((Map<String,dynamic> item ) => 
@@ -289,56 +324,35 @@ class _WeightChartState extends State<WeightChart> {
         show: false,
       ),
       belowBarData: BarAreaData(
-        show: false,
+        show: _barAreaReal,
+        colors: [
+          const Color(0xff4af699).withOpacity(0.1)
+        ]
       ),
     );
     final LineChartBarData lineChartBarData2 = LineChartBarData(
-      spots: [
-        FlSpot(1, 1),
-        FlSpot(3, 2.8),
-        FlSpot(7, 1.2),
-        FlSpot(10, 2.8),
-        FlSpot(12, 2.6),
-        FlSpot(13, 3.9),
-      ],
+      spots: (dataList.length <= ( limite + offset )) ?
+        dataList :
+        dataList.sublist(limite + offset),
       isCurved: true,
       colors: [
         const Color(0xffaa4cfc),
       ],
-      barWidth: 8,
-      isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: false,
-      ),
-      belowBarData: BarAreaData(show: false, colors: [
-        const Color(0x00aa4cfc),
-      ]),
-    );
-    final LineChartBarData lineChartBarData3 = LineChartBarData(
-      spots: [
-        FlSpot(1, 2.8),
-        FlSpot(3, 1.9),
-        FlSpot(6, 3),
-        FlSpot(10, 1.3),
-        FlSpot(13, 2.5),
-      ],
-      isCurved: true,
-      colors: const [
-        Color(0xff27b6fc),
-      ],
-      barWidth: 8,
+      barWidth: 5,
       isStrokeCapRound: true,
       dotData: FlDotData(
         show: false,
       ),
       belowBarData: BarAreaData(
-        show: false,
+        show: _barAreaPred,
+        colors: [
+          const Color(0xffaa4cfc).withOpacity(0.1),
+        ]
       ),
     );
     return [
       lineChartBarData1,
       lineChartBarData2,
-      lineChartBarData3,
     ];
   }
 
