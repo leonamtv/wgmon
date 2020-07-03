@@ -1,8 +1,4 @@
-import 'dart:convert';
-
 import 'package:csv/csv.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class Data {
@@ -37,7 +33,6 @@ class Data {
         .toList();
 
       for ( int i = 0; i < resultado.length; i++) {
-        // print(resultado[i].toString());
         _data.add(
           {
             'index' : resultado[i][0],
@@ -80,39 +75,4 @@ class Data {
     };
 
   }
-
-  Future<dynamic> getDataFromWeb () async {
-    String url = "https://docs.google.com/spreadsheet/ccc?key=1AdN0lmke6nHZO-g3-xH8laX_s7cdKbxXNEmtUxsIp2o&output=csv";
-    HttpClient client = new HttpClient();
-    HttpClientRequest req = await client.getUrl(Uri.parse(url));
-    HttpClientResponse res = await req.close();
-    String result = '';
-    res.transform(Utf8Decoder()).listen(( data ) {
-      result += data;
-    }).onDone(() { 
-      write(result).then((value){
-        return value;
-      });
-    });
-  }
-
-  Future<String> write(String text) async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final File file = File('${directory.path}/wgt.csv');
-    await file.writeAsString(text);
-    return "ok";
-  }
-
-  Future<String> read() async {
-    String text;
-    try {
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final File file = File('${directory.path}/wgt.csv');
-      text = await file.readAsString();
-    } catch (e) {
-      print("Couldn't read file");
-    }
-    return text;
-  }
-
 }

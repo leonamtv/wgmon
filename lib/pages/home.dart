@@ -88,7 +88,6 @@ class _WeightChartState extends State<WeightChart> {
   void initState() {
     dtObj = widget.dtObjt;
     _data = dtObj.getData();
-    print(_data);
     super.initState();
   }
 
@@ -100,7 +99,6 @@ class _WeightChartState extends State<WeightChart> {
         padding: EdgeInsets.only(bottom: 15, top: 15),
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
-          // borderRadius: const BorderRadius.all(Radius.circular(18)),
           gradient: LinearGradient(
             colors: const [
               Color(0xff2c274c),
@@ -152,7 +150,7 @@ class _WeightChartState extends State<WeightChart> {
                     message: 'Mostrar/Esconder área do gráfico',
                     child: IconButton(
                       icon: Icon(
-                        Icons.refresh,
+                        Icons.add,
                         color: Colors.white.withOpacity(0.5),
                       ),
                       onPressed: () {
