@@ -24,29 +24,30 @@ class Data {
     }
   }
 
-  Future<String> prepareToServe () async {
+  Future<List<Map<String,dynamic>>> prepareToServe () async {
     return fetchData().then((result) {
       rowsAsListOfValues = const CsvToListConverter().convert(result);
-      List<List<dynamic>> resultado = rowsAsListOfValues.firstWhere((element) { 
-          return element[2]
-            .runtimeType
-            .toString() == 
-            'double';
-        }, orElse: () => null)
+      List<List<dynamic>> resultado = rowsAsListOfValues
+        .where((element) { 
+          if ( element.length > 2 ) {
+            return element[2].runtimeType.toString() == 'double';
+          }
+          return false;
+        })
         .toList();
-  
+
       for ( int i = 0; i < resultado.length; i++) {
-        print(resultado[i].toString());
+        // print(resultado[i].toString());
         _data.add(
           {
-            'index' : resultado[0],
-            'date' : resultado[1],
-            'peso' : resultado[2],
-            'tag' : resultado[3],
+            'index' : resultado[i][0],
+            'date'  : resultado[i][1],
+            'peso'  : resultado[i][2],
+            'tag'   : resultado[i][3],
           }
         );
       }
-      return "ok";
+      return _data;
     });
   }
 

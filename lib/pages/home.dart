@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:wgmon/data.dart';
@@ -17,9 +15,6 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     dtObj = Data();
-    dtObj.prepareToServe().then((status){
-      print(status);
-    });
     super.initState();
   }
 
@@ -39,7 +34,23 @@ class _HomeState extends State<Home> {
       drawerScrimColor: Color(0xff2c274c),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: WeightChart(dtObjt: dtObj),
+          child: FutureBuilder(
+            future: dtObj.prepareToServe(),
+            builder: ( context, snapshot ) {
+              if ( snapshot.hasData ) {
+                return WeightChart(dtObjt: dtObj);
+              }
+              if ( snapshot.hasError ) {
+                return Center(child: Text('Um erro ocorreu no carregamento dos dados'));
+              }
+              return Container(
+                height: MediaQuery.of(context).size.height,
+                child: Center(
+                  child: CircularProgressIndicator()
+                ),
+              );
+            }
+          ),
         ),
       ),
     );
@@ -77,6 +88,7 @@ class _WeightChartState extends State<WeightChart> {
   void initState() {
     dtObj = widget.dtObjt;
     _data = dtObj.getData();
+    print(_data);
     super.initState();
   }
 
@@ -173,6 +185,7 @@ class _WeightChartState extends State<WeightChart> {
   }
 
   LineChartData sampleData1() {
+
     return LineChartData(
       lineTouchData: LineTouchData(
         touchTooltipData: LineTouchTooltipData(
