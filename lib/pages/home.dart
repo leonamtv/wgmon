@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:wgmon/data.dart';
+import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
   @override
@@ -8,6 +11,26 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  
+  Data dtObj;
+
+  @override
+  void initState() {
+    dtObj = Data();
+    dtObj.prepareToServe().then((status){
+      print(status);
+    });
+    super.initState();
+  }
+
+  Future<dynamic> fetchData () async {
+    final response = await http.get("https://docs.google.com/spreadsheet/ccc?key=1AdN0lmke6nHZO-g3-xH8laX_s7cdKbxXNEmtUxsIp2o&output=csv");
+    if (response.statusCode == 200) {
+      return response.body.toString();
+    } else {
+      throw Exception("Falha no download dos dados");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +39,7 @@ class _HomeState extends State<Home> {
       drawerScrimColor: Color(0xff2c274c),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: WeightChart(),
+          child: WeightChart(dtObjt: dtObj),
         ),
       ),
     );
@@ -25,8 +48,11 @@ class _HomeState extends State<Home> {
 
 class WeightChart extends StatefulWidget {
 
+  final Data dtObjt;
+
   const WeightChart({
     Key key,
+    @required this.dtObjt
   }) : super(key: key);
 
   @override
@@ -49,7 +75,7 @@ class _WeightChartState extends State<WeightChart> {
 
   @override
   void initState() {
-    dtObj = Data();
+    dtObj = widget.dtObjt;
     _data = dtObj.getData();
     super.initState();
   }
