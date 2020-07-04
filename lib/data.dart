@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 
 class Data {
 
+  final String _url = "https://docs.google.com/spreadsheet/ccc?key=1AdN0lmke6nHZO-g3-xH8laX_s7cdKbxXNEmtUxsIp2o&output=csv";
+
   List<List<dynamic>> rowsAsListOfValues = [];
 
   List<Map<String,dynamic>> _data = [];
@@ -11,8 +13,11 @@ class Data {
     return _data;
   }
 
+  /**
+   * Faz o download dos dados na internet;
+   */
   Future<dynamic> fetchData () async {
-    final response = await http.get("https://docs.google.com/spreadsheet/ccc?key=1AdN0lmke6nHZO-g3-xH8laX_s7cdKbxXNEmtUxsIp2o&output=csv");
+    final response = await http.get(_url);
     if (response.statusCode == 200) {
       return response.body.toString();
     } else {
@@ -20,6 +25,10 @@ class Data {
     }
   }
 
+  /**
+   * Carrega os dados em csv e faz parsing
+   * para uma Lista;
+   */
   Future<List<Map<String,dynamic>>> prepareToServe () async {
     return fetchData().then((result) {
       rowsAsListOfValues = const CsvToListConverter().convert(result);
@@ -46,6 +55,16 @@ class Data {
     });
   }
 
+  /**
+   * Calcula os parâmetros da regressão
+   * linear a partir da fórmula:
+   * 
+   * a = [ n * ( Σ ( x_i * y_i ))] - [ Σ x_i * Σ y_i ]
+   *     ----------------------------------------------
+   *         [ n * ( Σ ( x_i^2 ))] - [( Σ x_i)^2 ]
+   * 
+   * b = avg(y) - a * avg(x)
+   */
   Map<String, double> getParams () {
     
     double alpha = 0.0, betha = 0.0, ghama = 0.0, theta = 0.0, medX = 0.0, medY = 0.0;
