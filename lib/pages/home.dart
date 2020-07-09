@@ -282,7 +282,7 @@ class _WeightChartState extends State<WeightChart> {
               else 
                 return b;
             })['index'] + 0.0 : 
-            _data.sublist(limite).reduce((a, b) {
+            _data.sublist(_data.length - limite).reduce((a, b) {
               if ( a['index'] < b['index'] )
                 return a;
               else 
@@ -294,7 +294,7 @@ class _WeightChartState extends State<WeightChart> {
               else 
                 return b;
             })['index'] + 0.0 :
-            _data.sublist(limite).reduce((a, b) {
+            _data.sublist(_data.length - limite).reduce((a, b) {
               if ( a['index'] > b['index'] )
                 return a;
               else 
@@ -306,7 +306,7 @@ class _WeightChartState extends State<WeightChart> {
               else 
                 return b;
             })['peso'] + 2.0 :
-            _data.sublist(limite).reduce((a, b) {
+            _data.sublist(_data.length - limite).reduce((a, b) {
               if ( a['peso'] > b['peso'] )
                 return a;
               else 
@@ -318,7 +318,7 @@ class _WeightChartState extends State<WeightChart> {
               else 
                 return b;
             })['peso'] - 2.0 :
-            _data.sublist(limite).reduce((a, b) {
+            _data.sublist(_data.length - limite).reduce((a, b) {
               if ( a['peso'] < b['peso'] )
                 return a;
               else 
@@ -346,7 +346,7 @@ class _WeightChartState extends State<WeightChart> {
             item['index'].toDouble(), 
             item['peso']),
         ).toList()
-        : _data.sublist(limite).map((Map<String,dynamic> item ) => 
+        : _data.sublist(_data.length - limite).map((Map<String,dynamic> item ) => 
           FlSpot(
             item['index'].toDouble(), 
             item['peso']),
@@ -370,7 +370,7 @@ class _WeightChartState extends State<WeightChart> {
     final LineChartBarData lineChartBarData2 = LineChartBarData(
       spots: (dataList.length <= ( limite + offset )) ?
         dataList :
-        dataList.sublist(limite + offset),
+        dataList.sublist(_data.length - limite ),
       isCurved: true,
       colors: [
         const Color(0xffaa4cfc),
@@ -392,5 +392,4 @@ class _WeightChartState extends State<WeightChart> {
       lineChartBarData2,
     ];
   }
-
 }
