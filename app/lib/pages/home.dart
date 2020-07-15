@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:wgmon/data.dart';
 import 'package:http/http.dart' as http;
+import 'package:connectivity/connectivity.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,16 +17,24 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     dtObj = Data();
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile || result == ConnectivityResult.none) {
+        setState((){
+          dtObj = Data();
+        });
+      }
+    });
     super.initState();
   }
 
-  Future<dynamic> fetchData () async {
-    final response = await http.get("https://docs.google.com/spreadsheet/ccc?key=1AdN0lmke6nHZO-g3-xH8laX_s7cdKbxXNEmtUxsIp2o&output=csv");
-    if (response.statusCode == 200) {
-      return response.body.toString();
-    } else {
-      throw Exception("Falha no download dos dados");
+  Future<bool> checkCon() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile) {
+      return true;
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      return true;
     }
+    return false;
   }
 
   @override
@@ -41,7 +51,19 @@ class _HomeState extends State<Home> {
                 return WeightChart(dtObjt: dtObj);
               }
               if ( snapshot.hasError ) {
-                return Center(child: Text('Um erro ocorreu no carregamento dos dados'));
+                return Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: Center(
+                    child: Text(
+                      'Sem conexão com a internet!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500
+                      ),
+                    ),
+                  )
+                );
               }
               return Container(
                 height: MediaQuery.of(context).size.height,
@@ -332,7 +354,7 @@ class _WeightChartState extends State<WeightChart> {
 
     Map<String, double> params = dtObj.getParams();
     List<FlSpot> dataList = [];
-    
+
     for ( int i = 1; i <= ( _data.length + offset ); i++ )  {
       dataList.add(FlSpot(
         i.toDouble(),
@@ -370,7 +392,7 @@ class _WeightChartState extends State<WeightChart> {
     final LineChartBarData lineChartBarData2 = LineChartBarData(
       spots: (dataList.length <= ( limite + offset )) ?
         dataList :
-        dataList.sublist(_data.length - limite ),
+        dataList.sublist( dataList.length - ( limite + offset )),
       isCurved: true,
       colors: [
         const Color(0xffaa4cfc),
